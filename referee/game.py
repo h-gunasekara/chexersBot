@@ -51,7 +51,7 @@ else:
     _DISPLAY = { # something 5 characters wide for each colour:
         'r': " RED ",
         'g': "GREEN",
-        'b': " BLUE",
+        'b': " BLUE ",
         ' ': "     "
     }
 
