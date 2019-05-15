@@ -1,0 +1,5 @@
+Where we are going wrong:
+
+  Thy tree doesn't explore all options it just goes down the left most branch. should be an easy fix since all I need to do is change a condition in the recursion.
+
+  propagating the huristic up

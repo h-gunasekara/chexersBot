@@ -1,5 +1,4 @@
 
-from Killer_Pythons.search import Board
 from Killer_Pythons.gametree import *
 from Killer_Pythons.minimax import *
 
@@ -57,8 +56,8 @@ class ExamplePlayer:
 
         data_tree = GameTree()
         data_tree.build_tree(self.board)
-        next_move = MiniMax(data_tree, self.colour)
-        # next_move.minimax(next_move.root)
+        next_move = MiniMax(data_tree)
+        next_move.minimax(next_move.root, self.colour)
 
 
 

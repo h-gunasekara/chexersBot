@@ -22,7 +22,6 @@ class MiniMax:
         #  --> means we need to propagate the values back up the
         #      tree as part of our minimax algorithm
         successors = self.getSuccessors(node)
-        print("HELLO WORLLDLDLDLDDDDDDD")
         print("MiniMax:  Utility Value of Root Node: = " + str(best_val))
         # find the node with our best move
         best_move = None
