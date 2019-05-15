@@ -4,6 +4,7 @@
 
 colours = ['red', 'green', 'blue']
 
+
 class MiniMax:
     # print utility value of root node (assuming it is max)
     # print names of all nodes visited during search
@@ -16,7 +17,7 @@ class MiniMax:
 
     def minimax(self, node, colour):
         # first, find the max value
-        best_val = self.min_value(node, 0) # should be root node of tree
+        best_val = self.min_value(node, 0)  # should be root node of tree
 
         # second, find the node which HAS that max value
         #  --> means we need to propagate the values back up the
@@ -33,7 +34,6 @@ class MiniMax:
         # return that best value that we've found
         return best_move
 
-
     def min_value(self, node, depth):
         # print "MiniMax-->MAX: Visited Node :: " + node.Name
         if(self.isTerminal(node)):
@@ -46,18 +46,20 @@ class MiniMax:
         depth += 1
         for state in successors_states:
             # We need to look at the relevant
-            print("\n" + colours[depth%3])
-            curr_col = colours[depth%3]
-            min_value[curr_col] = min(min_value[curr_col], self.min_value(state, depth)[curr_col])
+            print("\n" + colours[depth % 3])
+            curr_col = colours[depth % 3]
+            min_value[curr_col] = min(
+                min_value[curr_col], self.min_value(
+                    state, depth)[curr_col])
 
         return min_value
-
 
     #                     #
     #   UTILITY METHODS   #
     #                     #
 
     # successor states in a game tree are the child nodes...
+
     def getSuccessors(self, node):
         assert node is not None
         return node.children

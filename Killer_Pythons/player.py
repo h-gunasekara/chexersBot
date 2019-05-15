@@ -4,19 +4,20 @@ from Killer_Pythons.minimax import *
 
 
 _STARTING_HEXES = {
-    'red': {(-3,3), (-3,2), (-3,1), (-3,0)},
-    'green': {(0,-3), (1,-3), (2,-3), (3,-3)},
+    'red': {(-3, 3), (-3, 2), (-3, 1), (-3, 0)},
+    'green': {(0, -3), (1, -3), (2, -3), (3, -3)},
     'blue': {(3, 0), (2, 1), (1, 2), (0, 3)},
 }
 _FINISHING_HEXES = {
-    'red': {(3,-3), (3,-2), (3,-1), (3,0)},
-    'green': {(-3,3), (-2,3), (-1,3), (0,3)},
-    'blue': {(-3,0),(-2,-1),(-1,-2),(0,-3)},
+    'red': {(3, -3), (3, -2), (3, -1), (3, 0)},
+    'green': {(-3, 3), (-2, 3), (-1, 3), (0, 3)},
+    'blue': {(-3, 0), (-2, -1), (-1, -2), (0, -3)},
 }
-_ADJACENT_STEPS = [(-1,+0),(+0,-1),(+1,-1),(+1,+0),(+0,+1),(-1,+1)]
+_ADJACENT_STEPS = [(-1, +0), (+0, -1), (+1, -1), (+1, +0), (+0, +1), (-1, +1)]
 
-ran = range(-3, +3+1)
-hexes = {(q,r) for q in ran for r in ran if -q-r in ran}
+ran = range(-3, +3 + 1)
+hexes = {(q, r) for q in ran for r in ran if -q - r in ran}
+
 
 class ExamplePlayer:
     def __init__(self, colour):
@@ -32,14 +33,12 @@ class ExamplePlayer:
         """
         self.colour = colour
         self.score = {'red': 0, 'green': 0, 'blue': 0}
-        ran = range(-3, +3+1)
-        self.hexes = {(q,r) for q in ran for r in ran if -q-r in ran}
+        ran = range(-3, +3 + 1)
+        self.hexes = {(q, r) for q in ran for r in ran if -q - r in ran}
         self.board = {qr: ' ' for qr in self.hexes}
         for colourx in _STARTING_HEXES:
             for qr in _STARTING_HEXES[colourx]:
                 self.board[qr] = colourx
-
-
 
     def action(self):
         """
@@ -53,18 +52,10 @@ class ExamplePlayer:
         actions.
         """
 
-
         data_tree = GameTree()
         data_tree.build_tree(self.board)
         next_move = MiniMax(data_tree)
         next_move.minimax(next_move.root, self.colour)
-
-
-
-
-
-
-
 
         # TODO: Decide what action to take.
         # available_actions = []
@@ -85,7 +76,7 @@ class ExamplePlayer:
         #
         # print(self.board)
         # Your mum is your dad
-        #print(available_actions)
+        # print(available_actions)
         #
         # for (type, coord) in available_actions:
         #     if type == "EXIT":
@@ -103,8 +94,6 @@ class ExamplePlayer:
         #
         # We have the list of next avalabile moves handy and we want to make a
         # Tree so that we can
-
-
 
     def update(self, colour, action):
         """
@@ -133,7 +122,7 @@ class ExamplePlayer:
             self.board[qr_b] = colour
         elif atype == "JUMP":
             qr_a, qr_b = (q_a, r_a), (q_b, r_b) = aargs
-            qr_c = (q_a+q_b)//2, (r_a+r_b)//2
+            qr_c = (q_a + q_b) // 2, (r_a + r_b) // 2
             self.board[qr_a] = ' '
             self.board[qr_b] = colour
             self.board[qr_c] = colour
@@ -141,5 +130,5 @@ class ExamplePlayer:
             qr = aargs
             self.board[qr] = ' '
             self.score[colour] += 1
-        else: # atype == "PASS":
+        else:  # atype == "PASS":
             pass
