@@ -59,6 +59,8 @@ ran = range(-3, +3 + 1)
 hexes = {(q, r) for q in ran for r in ran if -q - r in ran}
 colours = ['red', 'green', 'blue']
 
+# _TEMPLATE_DEBUG.format(self.value, *cells)
+
 
 class GameNode:
     def __init__(self, name, parent=None):
@@ -102,18 +104,21 @@ class GameTree:
         # base case
         if currcol >= 2:
             parent.value = self.h(parent.Name, currcol)
+            currcol -= 1
             # do hurisitic
             # need to figure out a way to go down every array
             return
-        next_moves = self.create(parent.Name, colours[currcol % 3])
-        for move in next_moves:
-            # print(move)
-            tree_node = GameNode(move)
-            tree_node.parent = parent
-            # print(str(tree_node))
-            parent.addChild(tree_node)
+        else:
+            next_moves = self.create(parent.Name, colours[currcol % 3])
             currcol += 1
-            self.parse_subtree(tree_node, currcol)
+            for move in next_moves:
+                # print(move)
+                tree_node = GameNode(move)
+                tree_node.parent = parent
+                # print(str(tree_node))
+                parent.addChild(tree_node)
+                self.parse_subtree(tree_node, currcol)
+
 
     def create(self, board, col):
         available_actions = []
