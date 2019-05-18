@@ -16,7 +16,7 @@ _FINISHING_HEXES = {
 _ADJACENT_STEPS = [(-1, +0), (+0, -1), (+1, -1), (+1, +0), (+0, +1), (-1, +1)]
 
 RAN = range(-3, +3 + 1)
-HEXES = {(q, r) for q in ran for r in ran if -q - r in ran}
+HEXES = {(q, r) for q in RAN for r in RAN if -q - r in RAN}
 
 
 class ExamplePlayer:

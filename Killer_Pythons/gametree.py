@@ -54,7 +54,7 @@ _FINISHING_HEXES = {
 _ADJACENT_STEPS = [(-1, +0), (+0, -1), (+1, -1), (+1, +0), (+0, +1), (-1, +1)]
 
 RAN = range(-3, +3 + 1)
-HEXES = [(q, r) for q in ran for r in ran if -q - r in ran]
+HEXES = [(q, r) for q in RAN for r in RAN if -q - r in RAN]
 COLOURS = ['red', 'green', 'blue']
 
 # _TEMPLATE_DEBUG.format(self.value, *cells)
@@ -101,16 +101,13 @@ class GameTree:
         # base case
         if currcol >= 2:
             parent.value = self.h(parent.Name, currcol)
-<<<<<<< HEAD
             currcol -= 1
             # do hurisitic
-=======
             # do heurisitic
->>>>>>> e7f903a91933daf747c209d2257351af7fc8f0cb
             # need to figure out a way to go down every array
             return
         else:
-            next_moves = self.create(parent.Name, colours[currcol % 3])
+            next_moves = self.create(parent.Name, COLOURS[currcol % 3])
             currcol += 1
             for move in next_moves:
                 # print(move)
@@ -133,7 +130,7 @@ class GameTree:
                 for dq, dr in _ADJACENT_STEPS:
                     for i, atype in [(1, "MOVE"), (2, "JUMP")]:
                         tqr = q + dq * i, r + dr * i
-                        if tqr in hexes:
+                        if tqr in HEXES:
                             if board[tqr] == ' ':
                                 action = (atype, (qr, tqr))
                                 all_boards.append(
@@ -167,7 +164,7 @@ class GameTree:
         return new_board
 
     def exit_dist(self, qr, col):
-        """how many hexes away from a coordinate is the nearest exiting hex?"""
+        """how many HEXES away from a coordinate is the nearest exiting hex?"""
         q, r = qr
         if col == 'red':
             return 3 - q
