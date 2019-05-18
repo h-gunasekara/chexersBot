@@ -1,4 +1,4 @@
-"PLEASE WORK"
+"PLEASE WORK you gonna work now?"
 "jeff"
 
 import sys
