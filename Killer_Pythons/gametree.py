@@ -98,7 +98,7 @@ class GameTree:
 
     def parse_subtree(self, parent, currcol):
         # base case
-        if currcol >= 4:
+        if currcol >= 2:
             parent.value = self.h(parent.Name, currcol)
             # do hurisitic
             # need to figure out a way to go down every array

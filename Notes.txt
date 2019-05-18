@@ -2,4 +2,15 @@ Where we are going wrong:
 
   Thy tree doesn't explore all options it just goes down the left most branch. should be an easy fix since all I need to do is change a condition in the recursion.
 
-  propagating the huristic up
+  propagating the heuristic up
+
+
+
+Monte Carlo - go down a fair few random branches and get probabilities on what works.
+Pruning
+
+Worth hard coding your first few moves
+
+
+
+It looks like we might have to cut our loses and spend our time focusing on a good heuristic for our minimax and if we get the chance then making marginal improvements to our minimax algorithm. We aren't in a state where we can be testing new algorithms. we are better off getting creative with our heuristic and winning marks there. 
