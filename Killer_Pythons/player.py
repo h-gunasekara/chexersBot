@@ -15,8 +15,8 @@ _FINISHING_HEXES = {
 }
 _ADJACENT_STEPS = [(-1, +0), (+0, -1), (+1, -1), (+1, +0), (+0, +1), (-1, +1)]
 
-ran = range(-3, +3 + 1)
-hexes = {(q, r) for q in ran for r in ran if -q - r in ran}
+RAN = range(-3, +3 + 1)
+HEXES = {(q, r) for q in ran for r in ran if -q - r in ran}
 
 
 class ExamplePlayer:
@@ -33,8 +33,7 @@ class ExamplePlayer:
         """
         self.colour = colour
         self.score = {'red': 0, 'green': 0, 'blue': 0}
-        ran = range(-3, +3 + 1)
-        self.hexes = {(q, r) for q in ran for r in ran if -q - r in ran}
+        self.hexes = HEXES
         self.board = {qr: ' ' for qr in self.hexes}
         for colourx in _STARTING_HEXES:
             for qr in _STARTING_HEXES[colourx]:
