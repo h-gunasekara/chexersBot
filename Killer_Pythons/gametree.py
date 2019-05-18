@@ -117,7 +117,7 @@ class GameTree:
                 if qr in _FINISHING_HEXES[col]:
                     action = ("EXIT", qr)
                     all_boards.append(self.change(board, action, col))
-                    available_actions.append
+                    available_actions.append(action)
                 q, r = qr
                 for dq, dr in _ADJACENT_STEPS:
                     for i, atype in [(1, "MOVE"), (2, "JUMP")]:
@@ -127,6 +127,7 @@ class GameTree:
                                 action = (atype, (qr, tqr))
                                 all_boards.append(
                                     self.change(board, action, col))
+                                available_actions.append(action)
                                 break
         if not available_actions:
             action = ("PASS", None)
