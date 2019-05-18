@@ -1,5 +1,3 @@
-"PLEASE WORK you gonna work now?"
-"jeff"
 
 import sys
 import copy
@@ -15,7 +13,7 @@ Usage:  python tree_parser.py [filename]
     File should have data in the format shown above.
 """
 
-_TEMPLATE_DEBUG = """hurisitic: {0}
+_TEMPLATE_DEBUG = """heurisitic: {0}
 
 board:       ,-' `-._,-' `-._,-' `-._,-' `-.
             | {16:} | {23:} | {29:} | {34:} |
@@ -55,15 +53,15 @@ _FINISHING_HEXES = {
 }
 _ADJACENT_STEPS = [(-1, +0), (+0, -1), (+1, -1), (+1, +0), (+0, +1), (-1, +1)]
 
-ran = range(-3, +3 + 1)
-hexes = {(q, r) for q in ran for r in ran if -q - r in ran}
-colours = ['red', 'green', 'blue']
+RAN = range(-3, +3 + 1)
+HEXES = [(q, r) for q in ran for r in ran if -q - r in ran]
+COLOURS = ['red', 'green', 'blue']
 
 
 class GameNode:
     def __init__(self, name, parent=None):
         self.Name = name      # the board dict
-        # the three tuple of distacne from end
+        # the three tuple of distance from end
         self.value = {'red': 0, 'green': 0, 'blue': 0}
         self.parent = parent  # a node reference
         self.children = []    # a list of nodes
@@ -73,8 +71,7 @@ class GameNode:
 
     def __str__(self, level=0):
         cells = []
-        ran = range(-3, +3 + 1)
-        for qr in [(q, r) for q in ran for r in ran if -q - r in ran]:
+        for qr in HEXES:
             cells.append(_DISPLAY[self.Name[qr]])
         ret = "\t" * level + _TEMPLATE_DEBUG.format(self.value, *cells) + "\n"
         for child in self.children:
@@ -102,7 +99,7 @@ class GameTree:
         # base case
         if currcol >= 2:
             parent.value = self.h(parent.Name, currcol)
-            # do hurisitic
+            # do heurisitic
             # need to figure out a way to go down every array
             return
         next_moves = self.create(parent.Name, colours[currcol % 3])
@@ -118,7 +115,7 @@ class GameTree:
     def create(self, board, col):
         available_actions = []
         all_boards = []
-        for qr in hexes:
+        for qr in HEXES:
             if board[qr] == col:
                 if qr in _FINISHING_HEXES[col]:
                     action = ("EXIT", qr)
