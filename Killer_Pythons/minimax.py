@@ -46,7 +46,6 @@ class MiniMax:
         depth += 1
         for state in successors_states:
             # We need to look at the relevant
-            print("\n" + colours[depth % 3])
             curr_col = colours[depth % 3]
             min_value[curr_col] = min(
                 min_value[curr_col], self.min_value(

@@ -99,7 +99,7 @@ class GameTree:
 
     def parse_subtree(self, parent, currcol):
         # base case
-        if currcol >= 2:
+        if currcol == 3:
             parent.value = self.h(parent.Name, currcol)
             currcol -= 1
             # do hurisitic

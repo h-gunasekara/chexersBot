@@ -54,7 +54,7 @@ class ExamplePlayer:
         data_tree = GameTree()
         data_tree.build_tree(self.board)
         next_move = MiniMax(data_tree)
-        next_move.minimax(next_move.root, self.colour)
+        print(next_move.minimax(next_move.root, self.colour))
 
         # TODO: Decide what action to take.
         # available_actions = []
