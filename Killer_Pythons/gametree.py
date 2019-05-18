@@ -1,16 +1,8 @@
 
 import sys
 import copy
-import math
-from ast import literal_eval
 """
-Data should be in the following format:
-['A', ['B', ('D', 3), ('E', 5)], ['C', ['F', ['I',('K',0), ('L', 7)],('J',5)], ['G', ('M',7), ('N',8)], ('H',4)]]
-
-Note that Leaves must be **tuples**
-
-Usage:  python tree_parser.py [filename]
-    File should have data in the format shown above.
+DON'T FORGET TO ATTRIBUTE CODE
 """
 
 _TEMPLATE_DEBUG = """heurisitic: {0}
@@ -61,20 +53,20 @@ COLOURS = ['red', 'green', 'blue']
 
 
 class GameNode:
-    def __init__(self, name, parent=None):
-        self.Name = name      # the board dict
+    def __init__(self, board, parent=None):
+        self.board = board      # the board dict
         # the three tuple of distance from end
         self.value = {'red': 0, 'green': 0, 'blue': 0}
         self.parent = parent  # a node reference
         self.children = []    # a list of nodes
 
-    def addChild(self, childNode):
+    def add_child(self, childNode):
         self.children.append(childNode)
 
     def __str__(self, level=0):
         cells = []
         for qr in HEXES:
-            cells.append(_DISPLAY[self.Name[qr]])
+            cells.append(_DISPLAY[self.board[qr]])
         ret = "\t" * level + _TEMPLATE_DEBUG.format(self.value, *cells) + "\n"
         for child in self.children:
             ret += child.__str__(level + 1)
@@ -97,25 +89,24 @@ class GameTree:
         self.parse_subtree(self.root, 0)
         print(str(self.root))
 
-    def parse_subtree(self, parent, currcol):
+    def parse_subtree(self, parent, curr_colour):
         # base case
-        if currcol == 3:
-            parent.value = self.h(parent.Name, currcol)
-            currcol -= 1
-            # do hurisitic
+        if curr_colour == 3:
+            parent.value = self.h(parent.board, curr_colour)
+            curr_colour -= 1
             # do heurisitic
             # need to figure out a way to go down every array
             return
         else:
-            next_moves = self.create(parent.Name, COLOURS[currcol % 3])
-            currcol += 1
+            next_moves = self.create(parent.board, COLOURS[curr_colour % 3])
+            curr_colour += 1
             for move in next_moves:
                 # print(move)
                 tree_node = GameNode(move)
                 tree_node.parent = parent
                 # print(str(tree_node))
-                parent.addChild(tree_node)
-                self.parse_subtree(tree_node, currcol)
+                parent.add_child(tree_node)
+                self.parse_subtree(tree_node, curr_colour)
 
 
     def create(self, board, col):
@@ -126,6 +117,7 @@ class GameTree:
                 if qr in _FINISHING_HEXES[col]:
                     action = ("EXIT", qr)
                     all_boards.append(self.change(board, action, col))
+                    available_actions.append
                 q, r = qr
                 for dq, dr in _ADJACENT_STEPS:
                     for i, atype in [(1, "MOVE"), (2, "JUMP")]:
@@ -173,29 +165,32 @@ class GameTree:
         if col == 'blue':
             return 3 - (-q - r)
 
-    def h(self, board, col):
+    def eval(self, board, col):
         """
-        Admissible heuristic for single-player Chexers:
         In the best case, a piece can get to the edge of the board in
         exit_dist // 2 jump actions (plus 1 move action when the distance is
-        odd), and then can exit with 1 action. Since all pieces must exit, we
-        sum these best case individual distances from each piece.
+        odd), and then can exit with 1 action. Since four pieces must exit, we
+        sum these best case individual distances from the best four pieces,
+        with a distance of zero if a piece has already exited. If there are not
+        enough remaining pieces on the board, add on 4 (the max best case
+        distance possible - this is not admissable as a heuristic but this is
+        an evaluation function, so it's fine)
         """
 
-        hscore = {'red': 0, 'green': 0, 'blue': 0}
-        for colour in hscore:
-            lst = []
+        eval_score = {'red': 0, 'green': 0, 'blue': 0}
+        for colour in eval_score:
+            piece_list = []
             for qr in board:
                 if board[qr] == colour:
                     lst.append(qr)
 
-            hscore[colour] = sum(
+            eval_score[colour] = sum(
                 math.ceil(
                     self.exit_dist(
                         qr,
                         colour)) for qr in lst)
 
-        return hscore
+        return eval_score
 
 
 if __name__ == "__main__":

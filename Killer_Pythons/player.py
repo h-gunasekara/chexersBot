@@ -33,10 +33,11 @@ class ExamplePlayer:
         """
         self.colour = colour
         self.score = {'red': 0, 'green': 0, 'blue': 0}
-        self.board = {qr: ' ' for qr in self.hexes}
+        self.board = {qr: ' ' for qr in HEXES}
         for colourx in _STARTING_HEXES:
             for qr in _STARTING_HEXES[colourx]:
                 self.board[qr] = colourx
+        self.red =
 
     def action(self):
         """
