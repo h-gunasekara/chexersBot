@@ -8,41 +8,10 @@ DON'T FORGET TO ATTRIBUTE CODE
 
 NUM_PIECES = 4
 MAX_DIST = 7
-MAX_DEPTH = 3
 BOARDDIM = 3
 NUM_PLAYERS = 3
-_TEMPLATE_DEBUG = """heurisitic: {0}
 
-board:       ,-' `-._,-' `-._,-' `-._,-' `-.
-            | {16:} | {23:} | {29:} | {34:} |
-            |  0,-3 |  1,-3 |  2,-3 |  3,-3 |
-         ,-' `-._,-' `-._,-' `-._,-' `-._,-' `-.
-        | {10:} | {17:} | {24:} | {30:} | {35:} |
-        | -1,-2 |  0,-2 |  1,-2 |  2,-2 |  3,-2 |
-     ,-' `-._,-' `-._,-' `-._,-' `-._,-' `-._,-' `-.
-    | {05:} | {11:} | {18:} | {25:} | {31:} | {36:} |
-    | -2,-1 | -1,-1 |  0,-1 |  1,-1 |  2,-1 |  3,-1 |
- ,-' `-._,-' `-._,-' `-._,-' `-._,-' `-._,-' `-._,-' `-.
-| {01:} | {06:} | {12:} | {19:} | {26:} | {32:} | {37:} |
-| -3, 0 | -2, 0 | -1, 0 |  0, 0 |  1, 0 |  2, 0 |  3, 0 |
- `-._,-' `-._,-' `-._,-' `-._,-' `-._,-' `-._,-' `-._,-'
-    | {02:} | {07:} | {13:} | {20:} | {27:} | {33:} |
-    | -3, 1 | -2, 1 | -1, 1 |  0, 1 |  1, 1 |  2, 1 |
-     `-._,-' `-._,-' `-._,-' `-._,-' `-._,-' `-._,-'
-        | {03:} | {08:} | {14:} | {21:} | {28:} |
-        | -3, 2 | -2, 2 | -1, 2 |  0, 2 |  1, 2 | key:
-         `-._,-' `-._,-' `-._,-' `-._,-' `-._,-' ,-' `-.
-            | {04:} | {09:} | {15:} | {22:} |   | input |
-            | -3, 3 | -2, 3 | -1, 3 |  0, 3 |   |  q, r |
-             `-._,-' `-._,-' `-._,-' `-._,-'     `-._,-'"""
-
-
-_DISPLAY = {  # something 5 characters wide for each colour:
-    'red': " RED ",
-    'green': "GREEN",
-    'blue': " BLUE",
-    ' ': "     "
-}
+MAX_DEPTH = 3
 
 _FINISHING_HEXES = {
     'red': {(3, -3), (3, -2), (3, -1), (3, 0)},
@@ -55,21 +24,20 @@ RAN = range(-BOARDDIM, BOARDDIM + 1)
 HEXES = [(q, r) for q in RAN for r in RAN if -q - r in RAN]
 COLOURS = ['red', 'green', 'blue']
 COLOUR_DICT = {'red': 0, 'green': 1, 'blue': 2}
+NEXT_COLOUR = {'red': 'green', 'green': 'blue', 'blue': 'red'}
 
-# _TEMPLATE_DEBUG.format(self.value, *cells)
-
-def maxn(game_tree, colour):
+def maxn(colour, score, board):
     return recur_maxn(game_tree.root, COLOUR_DICT[colour], 0)[1]
 
-def recur_maxn(game_node, colour_index, depth):
+def recur_maxn(board_state, depth):
     if depth == MAX_DEPTH:
-        return game_node.boardstate.eval_scores(), game_node.boardstate.action
+        return board_state.eval_scores(), board_state.action
     else:
         max_eval = - NUM_PIECES * MAX_DIST - 1
         best_score_dict = {}
         best_action = None
-        for child in game_node.children:
-            eval_score_dict = recur_maxn(child, colour_index, depth+1)[0]
+        for next_state in board_state.available_actions():
+            eval_score_dict = recur_maxn(next_state, depth+1)[0]
             eval_score = eval(eval_score_dict, COLOURS[(colour_index + depth) % NUM_PLAYERS])
             if eval_score > max_eval:
 #            if ((eval_score > max_eval) or
@@ -164,7 +132,7 @@ class GameTree:
 
     def change(self, board_state, action, colour):
         new_board = copy.copy(board_state.board)
-        new_exited = copy.copy(board_state.exited)
+        new_score = copy.copy(board_state.score)
         atype, aargs = action
         if atype == "MOVE":
             qr_a, qr_b = aargs
@@ -179,18 +147,19 @@ class GameTree:
         elif atype == "EXIT":
             qr = aargs
             new_board[qr] = ' '
-            new_exited[colour] += 1
+            new_score[colour] += 1
         else:  # atype == "PASS":
             pass
 
-        return BoardState(new_board, action, new_exited)
+        return BoardState(new_board, action, new_score)
 
 
 class BoardState:
-    def __init__(self, board, action=None, exited={'red': 0, 'green': 0, 'blue': 0}):
+    def __init__(self, board, colour, action=None, score={'red': 0, 'green': 0, 'blue': 0}):
         self.board = board
+        self.colour = colour
         self.action = action
-        self.exited = exited
+        self.score = score
 
     def piece_lists(self):
         piecelists = {'red': set(), 'green': set(), 'blue': set()}
@@ -211,10 +180,54 @@ class BoardState:
             exit_dists = []
             for qr in self.piece_lists()[colour]:
                 exit_dists.append((exit_dist(qr, colour)))
-            for i in range(NUM_PIECES - self.exited[colour] - len(exit_dists)):
+            for i in range(NUM_PIECES - self.score[colour] - len(exit_dists)):
                 exit_dists.append(MAX_DIST)
-            eval_score[colour] = sum(sorted(exit_dists)[:(NUM_PIECES - self.exited[colour])])
+            eval_score[colour] = sum(sorted(exit_dists)[:(NUM_PIECES - self.score[colour])])
         return eval_score
+
+    def available_actions(self):
+        all_board_states = []
+        for qr in HEXES:
+            if self.board[qr] == colour:
+                if qr in _FINISHING_HEXES[colour]:
+                    action = ("EXIT", qr)
+                    all_board_states.append(self.change(action))
+                q, r = qr
+                for dq, dr in _ADJACENT_STEPS:
+                    for i, atype in [(1, "MOVE"), (2, "JUMP")]:
+                        tqr = q + dq * i, r + dr * i
+                        if tqr in HEXES:
+                            if self.board[tqr] == ' ':
+                                action = (atype, (qr, tqr))
+                                all_board_states.append(self.change(action))
+                                break
+        if not all_board_states:
+            action = ("PASS", None)
+            all_board_states.append(self.change(action))
+        return all_board_states
+
+    def change(self, action):
+        new_board = copy.copy(self.board)
+        new_score = copy.copy(self.score)
+        atype, aargs = action
+        if atype == "MOVE":
+            qr_a, qr_b = aargs
+            new_board[qr_a] = ' '
+            new_board[qr_b] = colour
+        elif atype == "JUMP":
+            qr_a, qr_b = (q_a, r_a), (q_b, r_b) = aargs
+            qr_c = (q_a + q_b) // 2, (r_a + r_b) // 2
+            new_board[qr_a] = ' '
+            new_board[qr_b] = colour
+            new_board[qr_c] = colour
+        elif atype == "EXIT":
+            qr = aargs
+            new_board[qr] = ' '
+            new_score[colour] += 1
+        else:  # atype == "PASS":
+            pass
+
+        return BoardState(new_board, NEXT_COLOUR[colour], action, new_score)
 
 
 def exit_dist(qr, colour):
