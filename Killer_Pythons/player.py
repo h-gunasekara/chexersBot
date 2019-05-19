@@ -37,7 +37,6 @@ class ExamplePlayer:
         for colourx in _STARTING_HEXES:
             for qr in _STARTING_HEXES[colourx]:
                 self.board[qr] = colourx
-        self.red =
 
     def action(self):
         """
@@ -51,10 +50,9 @@ class ExamplePlayer:
         actions.
         """
 
-        data_tree = GameTree()
+        data_tree = GameTree(self.colour)
         data_tree.build_tree(self.board)
-        next_move = MiniMax(data_tree)
-        print(next_move.minimax(next_move.root, self.colour))
+        return maxn(data_tree, self.colour)
 
         # TODO: Decide what action to take.
         # available_actions = []
@@ -119,12 +117,14 @@ class ExamplePlayer:
             qr_a, qr_b = aargs
             self.board[qr_a] = ' '
             self.board[qr_b] = colour
+
         elif atype == "JUMP":
             qr_a, qr_b = (q_a, r_a), (q_b, r_b) = aargs
             qr_c = (q_a + q_b) // 2, (r_a + r_b) // 2
             self.board[qr_a] = ' '
             self.board[qr_b] = colour
             self.board[qr_c] = colour
+
         elif atype == "EXIT":
             qr = aargs
             self.board[qr] = ' '

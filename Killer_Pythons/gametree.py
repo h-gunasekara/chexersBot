@@ -1,10 +1,16 @@
 
 import sys
 import copy
+import math
 """
 DON'T FORGET TO ATTRIBUTE CODE
 """
 
+NUM_PIECES = 4
+MAX_DIST = 4
+MAX_DEPTH = 3
+BOARDDIM = 3
+NUM_PLAYERS = 3
 _TEMPLATE_DEBUG = """heurisitic: {0}
 
 board:       ,-' `-._,-' `-._,-' `-._,-' `-.
@@ -45,28 +51,57 @@ _FINISHING_HEXES = {
 }
 _ADJACENT_STEPS = [(-1, +0), (+0, -1), (+1, -1), (+1, +0), (+0, +1), (-1, +1)]
 
-RAN = range(-3, +3 + 1)
+RAN = range(-BOARDDIM, BOARDDIM + 1)
 HEXES = [(q, r) for q in RAN for r in RAN if -q - r in RAN]
 COLOURS = ['red', 'green', 'blue']
+COLOUR_DICT = {'red': 0, 'green': 1, 'blue': 2}
 
 # _TEMPLATE_DEBUG.format(self.value, *cells)
 
+def maxn(game_tree, colour):
+    return recur_maxn(game_tree.root, COLOUR_DICT[colour], 0)[1]
+
+def recur_maxn(game_node, colour_index, depth):
+    if depth == MAX_DEPTH:
+        return game_node.boardstate.eval_scores(), game_node.boardstate.action
+    else:
+        max_eval = - NUM_PIECES * MAX_DIST - 1
+        best_score_dict = {}
+        best_action = None
+        for child in game_node.children:
+            eval_score_dict = recur_maxn(child, colour_index, depth+1)[0]
+            eval_score = eval(eval_score_dict, COLOURS[(colour_index + depth) % NUM_PLAYERS])
+            if ((eval_score > max_eval) or
+                    (eval_score == max_eval and (best_action and best_action[0] != "JUMP" and child.boardstate.action == "JUMP"))):
+                max_eval = eval_score
+                best_score_dict = eval_score_dict
+                best_action = child.boardstate.action
+        return best_score_dict, best_action
+
+
+def eval(eval_score_dict, curr_colour):
+    min_opposition = NUM_PIECES * MAX_DIST
+    for colour in COLOURS:
+        if colour != curr_colour and eval_score_dict[colour] < min_opposition:
+            min_opposition = eval_score_dict[colour]
+    return min_opposition - eval_score_dict[curr_colour]
+#    return - eval_score_dict[curr_colour]
 
 class GameNode:
-    def __init__(self, board, parent=None):
-        self.board = board      # the board dict
+    def __init__(self, board_state):
+        self.boardstate = board_state      # the board state
         # the three tuple of distance from end
         self.value = {'red': 0, 'green': 0, 'blue': 0}
-        self.parent = parent  # a node reference
+#        self.parent = parent  # a node reference
         self.children = []    # a list of nodes
 
-    def add_child(self, childNode):
-        self.children.append(childNode)
+    def add_child(self, child_node):
+        self.children.append(child_node)
 
     def __str__(self, level=0):
         cells = []
         for qr in HEXES:
-            cells.append(_DISPLAY[self.board[qr]])
+            cells.append(_DISPLAY[self.boardstate.board[qr]])
         ret = "\t" * level + _TEMPLATE_DEBUG.format(self.value, *cells) + "\n"
         for child in self.children:
             ret += child.__str__(level + 1)
@@ -77,47 +112,39 @@ class GameNode:
 
 
 class GameTree:
-    def __init__(self):
+    def __init__(self, my_colour):
         self.root = None
+        self.colourindex = COLOUR_DICT[my_colour]
 
     def build_tree(self, board):
         """
         :param data_list: Take data in list format
         :return: Parse a tree from it
         """
-        self.root = GameNode(board)
+        self.root = GameNode(BoardState(board))
         self.parse_subtree(self.root, 0)
-        print(str(self.root))
 
-    def parse_subtree(self, parent, curr_colour):
+    def parse_subtree(self, curr_node, depth):
         # base case
-        if curr_colour == 3:
-            parent.value = self.h(parent.board, curr_colour)
-            curr_colour -= 1
-            # do heurisitic
-            # need to figure out a way to go down every array
+        if depth == MAX_DEPTH:
+            curr_node.value = curr_node.boardstate.eval_scores()
             return
         else:
-            next_moves = self.create(parent.board, COLOURS[curr_colour % 3])
-            curr_colour += 1
-            for move in next_moves:
-                # print(move)
-                tree_node = GameNode(move)
-                tree_node.parent = parent
+            next_board_states = self.create(curr_node.boardstate.board, COLOURS[(self.colourindex + depth) % NUM_PLAYERS])
+            depth += 1
+            for next_board_state in next_board_states:
+                child = GameNode(next_board_state)
                 # print(str(tree_node))
-                parent.add_child(tree_node)
-                self.parse_subtree(tree_node, curr_colour)
+                curr_node.add_child(child)
+                self.parse_subtree(child, depth)
 
-
-    def create(self, board, col):
-        available_actions = []
-        all_boards = []
+    def create(self, board, colour):
+        all_board_states = []
         for qr in HEXES:
-            if board[qr] == col:
-                if qr in _FINISHING_HEXES[col]:
+            if board[qr] == colour:
+                if qr in _FINISHING_HEXES[colour]:
                     action = ("EXIT", qr)
-                    all_boards.append(self.change(board, action, col))
-                    available_actions.append(action)
+                    all_board_states.append(self.change(board, action, colour))
                 q, r = qr
                 for dq, dr in _ADJACENT_STEPS:
                     for i, atype in [(1, "MOVE"), (2, "JUMP")]:
@@ -125,48 +152,50 @@ class GameTree:
                         if tqr in HEXES:
                             if board[tqr] == ' ':
                                 action = (atype, (qr, tqr))
-                                all_boards.append(
-                                    self.change(board, action, col))
-                                available_actions.append(action)
+                                all_board_states.append(
+                                    self.change(board, action, colour))
                                 break
-        if not available_actions:
+        if not all_board_states:
             action = ("PASS", None)
-            all_boards.append(self.change(board, action, col))
+            all_board_states.append(self.change(board, action, colour))
         # print(all_boards)
-        return all_boards
+        return all_board_states
 
-    def change(self, board, action, col):
+    def change(self, board, action, colour):
         new_board = copy.copy(board)
         atype, aargs = action
         if atype == "MOVE":
             qr_a, qr_b = aargs
             new_board[qr_a] = ' '
-            new_board[qr_b] = col
+            new_board[qr_b] = colour
         elif atype == "JUMP":
             qr_a, qr_b = (q_a, r_a), (q_b, r_b) = aargs
             qr_c = (q_a + q_b) // 2, (r_a + r_b) // 2
             new_board[qr_a] = ' '
-            new_board[qr_b] = col
-            new_board[qr_c] = col
+            new_board[qr_b] = colour
+            new_board[qr_c] = colour
         elif atype == "EXIT":
             qr = aargs
             new_board[qr] = ' '
         else:  # atype == "PASS":
             pass
 
-        return new_board
+        return BoardState(new_board, action)
 
-    def exit_dist(self, qr, col):
-        """how many HEXES away from a coordinate is the nearest exiting hex?"""
-        q, r = qr
-        if col == 'red':
-            return 3 - q
-        if col == 'green':
-            return 3 - r
-        if col == 'blue':
-            return 3 - (-q - r)
 
-    def eval(self, board, col):
+class BoardState:
+    def __init__(self, board, action=None):
+        self.board = board
+        self.action = action
+
+    def piece_lists(self):
+        piecelists = {'red': set(), 'green': set(), 'blue': set()}
+        for qr in HEXES:
+            if self.board[qr] != ' ':
+                piecelists[self.board[qr]].add(qr)
+        return piecelists
+
+    def eval_scores(self):
         """
         In the best case, a piece can get to the edge of the board in
         exit_dist // 2 jump actions (plus 1 move action when the distance is
@@ -177,22 +206,26 @@ class GameTree:
         distance possible - this is not admissable as a heuristic but this is
         an evaluation function, so it's fine)
         """
-
         eval_score = {'red': 0, 'green': 0, 'blue': 0}
         for colour in eval_score:
-            piece_list = []
-            for qr in board:
-                if board[qr] == colour:
-                    lst.append(qr)
-
-            eval_score[colour] = sum(
-                math.ceil(
-                    self.exit_dist(
-                        qr,
-                        colour)) for qr in lst)
-
+            exit_dists = []
+            for qr in self.piece_lists()[colour]:
+                exit_dists.append(math.ceil(exit_dist(qr, colour) / 2) + 1)
+            for i in range(NUM_PIECES - len(exit_dists)):
+                exit_dists.append(MAX_DIST)
+            eval_score[colour] = sum(exit_dists)
         return eval_score
 
+
+def exit_dist(qr, colour):
+    """how many HEXES away from a coordinate is the nearest exiting hex?"""
+    q, r = qr
+    if colour == 'red':
+        return BOARDDIM - q
+    if colour == 'green':
+        return BOARDDIM - r
+    if colour == 'blue':
+        return BOARDDIM - (-q - r)
 
 if __name__ == "__main__":
     main()
