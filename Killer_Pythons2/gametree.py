@@ -50,6 +50,10 @@ _FINISHING_HEXES = {
     'blue': {(-3, 0), (-2, -1), (-1, -2), (0, -3)},
 }
 _ADJACENT_STEPS = [(-1, +0), (+0, -1), (+1, -1), (+1, +0), (+0, +1), (-1, +1)]
+_FORWARD_STEPS = {
+    'red': [(+1, -1), (+1, +0)],
+    'green': [(+0, +1), (-1, +1)],
+    'blue': [(-1, +0), (+0, -1)]}
 
 RAN = range(-BOARDDIM, BOARDDIM + 1)
 HEXES = [(q, r) for q in RAN for r in RAN if -q - r in RAN]

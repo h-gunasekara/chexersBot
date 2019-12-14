@@ -49,10 +49,7 @@ class ExamplePlayer:
         must be represented based on the above instructions for representing
         actions.
         """
-
-        data_tree = GameTree(self.colour)
-        data_tree.build_tree(self.board)
-        return maxn(data_tree, self.colour)
+        return maxn(self.colour, self.score, self.board)
 
         # TODO: Decide what action to take.
         # available_actions = []
